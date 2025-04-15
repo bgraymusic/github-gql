@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import yaml
 
 
@@ -31,15 +32,16 @@ class Config:
     instance: Config = None
 
     @staticmethod
-    def getInstance() -> Config:
+    def get() -> Config:
         return Config.instance or Config()
 
     def __init__(self):
         self.github_graphql_endpoint = None
+        self.github_graphql_schema = None
         self.paged_selections = None
         self.unpaged_selections = None
 
-        with open("ghp/config.yml", "r") as f:
+        with open(f"{Path(__file__).parent}/config.yml", "r") as f:
             data = yaml.load(f.read(), yaml.BaseLoader)
         for key, value in data.items():
             setattr(self, key, value)

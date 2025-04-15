@@ -102,10 +102,10 @@ class QueryPaginator:
         return selections
 
     def _get_page_spec(self, selection: FieldNode):
-        return next((x for x in Config.getInstance().paged_selections if x["key"] == selection.name.value), None)
+        return next((x for x in Config.get().paged_selections if x["key"] == selection.name.value), None)
 
     def _expand_paged_selection(self, selection: FieldNode):
-        config_data = next((x for x in Config.getInstance().paged_selections if x["key"] == selection.name.value))
+        config_data = next((x for x in Config.get().paged_selections if x["key"] == selection.name.value))
         if not selection.selection_set:
             selection.selection_set = SelectionSetNode(selections=())
         for id_field in config_data["id_fields"]:
@@ -135,7 +135,7 @@ class QueryPaginator:
 
     def _expand_unpaged_selection(self, selection: FieldNode):
         config_data = next(
-            (x for x in Config.getInstance().unpaged_selections if x["key"] == selection.name.value), False
+            (x for x in Config.get().unpaged_selections if x["key"] == selection.name.value), False
         )
         if config_data:
             if not selection.selection_set:
@@ -143,7 +143,7 @@ class QueryPaginator:
             for id_field in config_data["id_fields"]:
                 if not next((x for x in selection.selection_set.selections if x.name.value == id_field), False):
                     selection.selection_set.selections = selection.selection_set.selections + (
-                        FieldNode(name=NameNode(value=id_field), directives=[], arguments=[])
+                        FieldNode(name=NameNode(value=id_field), directives=[], arguments=[]),
                     )
 
     def _init_document_pagination(self, selections: dict[FieldNode, dict[int, str]]) -> None:

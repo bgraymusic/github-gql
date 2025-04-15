@@ -50,7 +50,7 @@ class QueryIterator:
         self.doc = doc
         self.vars = vars
         self.page_size = page_size
-        self.paged_selections = Config.getInstance().paged_selections
+        self.paged_selections = Config.get().paged_selections
         self.complete = False
 
     def __next__(self) -> None:
