@@ -1,0 +1,33 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Symantic versioning tag to apply to the release'
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: bash -v {0}
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_PAT }} # default token will not trigger followup actions
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Create Release Tag
+        run: |-
+          git tag ${{ inputs.tag }}
+          git push origin ${{ inputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
