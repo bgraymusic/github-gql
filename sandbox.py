@@ -6,7 +6,7 @@ from pprint import pprint
 from githubgql.Client import GitHubGQL
 
 
-query = '''
+query = """
 query getViewerData {
     viewer {
         id
@@ -19,9 +19,9 @@ query getViewerData {
         assignableUsers
     }
 }
-'''
+"""
 
-four_level_query = '''
+four_level_query = """
 query deeplyNestedQuery {
     viewer {
         email
@@ -40,7 +40,7 @@ query deeplyNestedQuery {
         }
     }
 }
-'''
+"""
 
 client = GitHubGQL()
 data = client.execute_all(four_level_query, page_size=5)
