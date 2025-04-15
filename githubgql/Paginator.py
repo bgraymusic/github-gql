@@ -48,9 +48,7 @@ class QueryPaginator:
     #######################################################
     # PUBLIC INTERFACE
 
-    def __init__(
-        self, gql_client: GQLClient, query_str: str, vars: dict[str, str], page_size
-    ):
+    def __init__(self, gql_client: GQLClient, query_str: str, vars: dict[str, str], page_size):
         """Construct a paginator for the query provided"""
         self.gql_client = gql_client
         self.vars = vars
@@ -71,7 +69,7 @@ class QueryPaginator:
     def _prepare_document(self):
         selections: dict[FieldNode, dict[int, str]] = {}
         for definition in self.doc.definitions:
-            if (isinstance(definition, OperationDefinitionNode) and definition.operation == OperationType.QUERY):
+            if isinstance(definition, OperationDefinitionNode) and definition.operation == OperationType.QUERY:
                 QueryPaginator.Merger.merge(selections, self._prepare_definition(definition))
         self._init_document_pagination(selections)
 
@@ -112,28 +110,61 @@ class QueryPaginator:
             selection.selection_set = SelectionSetNode(selections=())
         for id_field in config_data["id_fields"]:
             if not next((x for x in selection.selection_set.selections if x.name.value == id_field), False):
-                selection.selection_set.selections = (selection.selection_set.selections + (FieldNode(name=NameNode(value=id_field), directives=[], arguments=[]),))
-        if not next((True for x in selection.selection_set.selections if isinstance(x, FieldNode) and x.name.value in ["nodes", "edges"]), False):
-            node = FieldNode(name=NameNode(value="node"), directives=[], arguments=[], selection_set=selection.selection_set)
+                selection.selection_set.selections = selection.selection_set.selections + (
+                    FieldNode(name=NameNode(value=id_field), directives=[], arguments=[]),
+                )
+        if not next(
+            (
+                True
+                for x in selection.selection_set.selections
+                if isinstance(x, FieldNode) and x.name.value in ["nodes", "edges"]
+            ),
+            False,
+        ):
+            node = FieldNode(
+                name=NameNode(value="node"), directives=[], arguments=[], selection_set=selection.selection_set
+            )
             cursor = FieldNode(name=NameNode(value="cursor"), directives=[], arguments=[])
-            edges = FieldNode(name=NameNode(value="edges"), directives=[], arguments=[], selection_set=SelectionSetNode(selections=(node, cursor)))
+            edges = FieldNode(
+                name=NameNode(value="edges"),
+                directives=[],
+                arguments=[],
+                selection_set=SelectionSetNode(selections=(node, cursor)),
+            )
             selection.selection_set = SelectionSetNode(selections=(edges,))
 
     def _expand_unpaged_selection(self, selection: FieldNode):
-        config_data = next((x for x in Config.getInstance().unpaged_selections if x["key"] == selection.name.value), False)
+        config_data = next(
+            (x for x in Config.getInstance().unpaged_selections if x["key"] == selection.name.value), False
+        )
         if config_data:
             if not selection.selection_set:
                 selection.selection_set = SelectionSetNode(selections=())
             for id_field in config_data["id_fields"]:
                 if not next((x for x in selection.selection_set.selections if x.name.value == id_field), False):
-                    selection.selection_set.selections = (selection.selection_set.selections + (FieldNode(name=NameNode(value=id_field), directives=[], arguments=[])))
+                    selection.selection_set.selections = selection.selection_set.selections + (
+                        FieldNode(name=NameNode(value=id_field), directives=[], arguments=[])
+                    )
 
     def _init_document_pagination(self, selections: dict[FieldNode, dict[int, str]]) -> None:
         for node, args in selections.items():
-            cursor_value = (StringValueNode(value=args["after"]) if args["after"] else NullValueNode())
-            node.arguments = node.arguments + (ArgumentNode(name=NameNode(value="first"), value=IntValueNode(value=args["first"])), ArgumentNode(name=NameNode(value="after"), value=cursor_value))
+            cursor_value = StringValueNode(value=args["after"]) if args["after"] else NullValueNode()
+            node.arguments = node.arguments + (
+                ArgumentNode(name=NameNode(value="first"), value=IntValueNode(value=args["first"])),
+                ArgumentNode(name=NameNode(value="after"), value=cursor_value),
+            )
             node.selection_set.selections = node.selection_set.selections + self._get_pagination_fields()
 
     def _get_pagination_fields(self) -> tuple[FieldNode]:
-        selections = [FieldNode(name=NameNode(value=x), directives=[], arguments=[]) for x in ["endCursor", "hasNextPage"]]
-        return (FieldNode(name=NameNode(value="pageInfo"), directives=[], arguments=[], selection_set=SelectionSetNode(selections=selections)), FieldNode(name=NameNode(value="totalCount"), directives=[], arguments=[]))
+        selections = [
+            FieldNode(name=NameNode(value=x), directives=[], arguments=[]) for x in ["endCursor", "hasNextPage"]
+        ]
+        return (
+            FieldNode(
+                name=NameNode(value="pageInfo"),
+                directives=[],
+                arguments=[],
+                selection_set=SelectionSetNode(selections=selections),
+            ),
+            FieldNode(name=NameNode(value="totalCount"), directives=[], arguments=[]),
+        )

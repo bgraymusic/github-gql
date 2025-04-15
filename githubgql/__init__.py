@@ -23,6 +23,4 @@
 from .Client import GitHubGQL
 
 
-__all__ = [
-    "GitHubGQL"
-]
+__all__ = ["GitHubGQL"]

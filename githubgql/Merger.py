@@ -42,13 +42,13 @@ def strategy_merge_paged_selections(config: Merger, path: list, base: list, nxt:
         non_nodes: list = []
         for k, v in enumerate(nxt):
             if _is_edge(v):
-                base_edge = next((x for x in base if _is_edge(x) and x['node']['id'] == v['node']['id']), False)
+                base_edge = next((x for x in base if _is_edge(x) and x["node"]["id"] == v["node"]["id"]), False)
                 if base_edge:
                     base_edge = config.value_strategy(path + [k], base_edge, v)
                 else:
                     non_nodes.append(v)
             elif _has_id(v):
-                base_edge = next((x for x in base if _has_id(x) and x['id'] == v['id']), False)
+                base_edge = next((x for x in base if _has_id(x) and x["id"] == v["id"]), False)
                 if base_edge:
                     base_edge = config.value_strategy(path + [k], base_edge, v)
                 else:
@@ -64,12 +64,12 @@ def strategy_merge_paged_selections(config: Merger, path: list, base: list, nxt:
 
 def _is_edge(node: dict):
     """Return whether or not this node is an `edges` node."""
-    return isinstance(node, dict) and 'node' in node and 'id' in node['node']
+    return isinstance(node, dict) and "node" in node and "id" in node["node"]
 
 
 def _has_id(node: dict):
     """Return whether or not this node has an `id` key."""
-    return isinstance(node, dict) and 'id' in node
+    return isinstance(node, dict) and "id" in node
 
 
 def strategy_override_if_not_empty(config: Merger, path: list, base: T, nxt: Any) -> T:
@@ -84,6 +84,8 @@ GITHUB_GRAPHQL_TYPE_SPECIFIC_MERGE_STRATEGIES: list[tuple[type, str]] = [
     (set, "union"),
 ]
 
-ghp_merger: Merger = Merger(GITHUB_GRAPHQL_TYPE_SPECIFIC_MERGE_STRATEGIES,
-                            fallback_strategies=[strategy_override_if_not_empty],
-                            type_conflict_strategies=["override_if_not_empty"])
+ghp_merger: Merger = Merger(
+    GITHUB_GRAPHQL_TYPE_SPECIFIC_MERGE_STRATEGIES,
+    fallback_strategies=[strategy_override_if_not_empty],
+    type_conflict_strategies=["override_if_not_empty"],
+)

@@ -198,9 +198,7 @@ class GitHubGQL:
             )
             self.gql_client = GQLClient(schema=schema_str, transport=gql_transport)
 
-    def execute_all(
-        self, query: str, *, vars: dict[str, str] = None, page_size: int = None
-    ) -> dict[str, Any]:
+    def execute_all(self, query: str, *, vars: dict[str, str] = None, page_size: int = None) -> dict[str, Any]:
         """Execute the provided query to completion, with as many calls as necessary.
 
         Args:
@@ -219,17 +217,13 @@ class GitHubGQL:
         Example:
             results = client.execute_all(query, vars, 5)
         """
-        paginator = QueryPaginator(
-            self.gql_client, query, vars, page_size or self.default_page_size
-        )
+        paginator = QueryPaginator(self.gql_client, query, vars, page_size or self.default_page_size)
         merged_results = {}
         for result in paginator:
             GitHubGQL.Merger.merge(merged_results, result)
         return merged_results
 
-    def execute_iter(
-        self, query: str, *, vars: dict[str, str] = None, page_size: int = None
-    ) -> QueryIterator:
+    def execute_iter(self, query: str, *, vars: dict[str, str] = None, page_size: int = None) -> QueryIterator:
         """Return an iterator for the provided query.
 
         Args:
@@ -252,9 +246,7 @@ class GitHubGQL:
                     # Got what we need
                     break
         """
-        return QueryPaginator(
-            self.gql_client, query, vars, page_size or self.default_page_size
-        ).__iter__()
+        return QueryPaginator(self.gql_client, query, vars, page_size or self.default_page_size).__iter__()
 
     def execute_callback(
         self,
@@ -293,9 +285,7 @@ class GitHubGQL:
 
             client.execute_callback(callback)
         """
-        paginator = QueryPaginator(
-            self.gql_client, query, vars, page_size or self.default_page_size
-        )
+        paginator = QueryPaginator(self.gql_client, query, vars, page_size or self.default_page_size)
         try:
             for result in paginator:
                 if not callback(result):

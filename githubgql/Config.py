@@ -39,7 +39,7 @@ class Config:
         self.paged_selections = None
         self.unpaged_selections = None
 
-        with open('ghp/config.yml', 'r') as f:
+        with open("ghp/config.yml", "r") as f:
             data = yaml.load(f.read(), yaml.BaseLoader)
         for key, value in data.items():
             setattr(self, key, value)

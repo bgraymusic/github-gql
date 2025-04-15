@@ -72,8 +72,9 @@ class QueryIterator:
         self._collapse_result(result_doc)
         return has_more_pages
 
-    def _build_pagination_updates(self, node: ResultsNode, path: PaginationPath,
-                                  updates: PaginationUpdateMapping) -> bool:
+    def _build_pagination_updates(
+        self, node: ResultsNode, path: PaginationPath, updates: PaginationUpdateMapping
+    ) -> bool:
         node_update: QueryIterator.PaginationUpdate = None
         ignore_sub_path = isinstance(node, list)
         if isinstance(node, list):
@@ -84,27 +85,28 @@ class QueryIterator:
                 sub_path = path.copy()
                 if not ignore_sub_path:
                     sub_path.append(k)
-                if k == 'pageInfo':
+                if k == "pageInfo":
                     node_update = (path, v)
-                    if 'complete' not in node_update[1]:
-                        node_update[1]['complete'] = False
+                    if "complete" not in node_update[1]:
+                        node_update[1]["complete"] = False
                 else:
-                    children_have_more_pages = \
+                    children_have_more_pages = (
                         self._build_pagination_updates(v, sub_path, updates) or children_have_more_pages
+                    )
 
         if children_have_more_pages:
             return True
         elif node_update:
-            if node_update[1]['complete']:
+            if node_update[1]["complete"]:
                 return False
-            elif len(node['edges']):
-                node_update[1]['cursors'] = [(len(node['edges']), node_update[1]['endCursor'])]
-                idx = '/'.join(node_update[0])
+            elif len(node["edges"]):
+                node_update[1]["cursors"] = [(len(node["edges"]), node_update[1]["endCursor"])]
+                idx = "/".join(node_update[0])
                 updates[idx] = QueryIterator.Merger.merge(updates[idx], node_update) if idx in updates else node_update
-                node_update[1]['complete'] = not node_update[1]['hasNextPage']
-                if not node_update[1]['complete']:
+                node_update[1]["complete"] = not node_update[1]["hasNextPage"]
+                if not node_update[1]["complete"]:
                     self._reset_child_cursors(path, updates)
-                return not node_update[1]['complete']
+                return not node_update[1]["complete"]
         else:
             return False
 
@@ -116,32 +118,39 @@ class QueryIterator:
                     sub_path = path.copy()
                     sub_path.append(sub_node.name.value)
                     if self._get_page_spec(sub_node):
-                        updates['/'.join(sub_path)] = ((sub_path, {
-                            'cursors': [(0, None)], 'hasNextPage': True, 'complete': False
-                        }))
+                        updates["/".join(sub_path)] = (
+                            sub_path,
+                            {"cursors": [(0, None)], "hasNextPage": True, "complete": False},
+                        )
                     self._reset_child_cursors(sub_path, updates)
 
     def _get_page_spec(self, selection: FieldNode):
-        return next((x for x in self.paged_selections if x['key'] == selection.name.value), None)
+        return next((x for x in self.paged_selections if x["key"] == selection.name.value), None)
 
     def _apply_pagination_updates(self, updates: PaginationUpdateMapping) -> bool:
         for k, v in updates.items():
             working_node: FieldNode = self._path_to_node(v[0])
-            arg = next((x for x in working_node.arguments if x.name.value == 'after'))
-            max_val = max([x[0] for x in v[1]['cursors']])
-            cursor = next((x[1] for x in v[1]['cursors'] if x[0] == max_val))
+            arg = next((x for x in working_node.arguments if x.name.value == "after"))
+            max_val = max([x[0] for x in v[1]["cursors"]])
+            cursor = next((x[1] for x in v[1]["cursors"] if x[0] == max_val))
             arg.value = StringValueNode(value=cursor) if cursor else NullValueNode()
 
     def _path_to_node(self, path: PaginationPath) -> FieldNode:
-        node: OperationDefinitionNode = \
-            next((x for x in self.doc.definitions
-                  if isinstance(x, OperationDefinitionNode) and x.operation == OperationType.QUERY), None)
+        node: OperationDefinitionNode = next(
+            (
+                x
+                for x in self.doc.definitions
+                if isinstance(x, OperationDefinitionNode) and x.operation == OperationType.QUERY
+            ),
+            None,
+        )
         if not node:
             return None
 
         for path_step in path:
-            node = next((x for x in node.selection_set.selections
-                        if isinstance(x, FieldNode) and x.name.value == path_step))
+            node = next(
+                (x for x in node.selection_set.selections if isinstance(x, FieldNode) and x.name.value == path_step)
+            )
 
         return node
 
@@ -151,11 +160,11 @@ class QueryIterator:
         keys_to_delete = []
         for k, v in node.items():
             if isinstance(v, dict) or isinstance(v, list):
-                if k == 'pageInfo':
+                if k == "pageInfo":
                     keys_to_delete.append(k)
                 else:
                     self._clean_up_result(v)
-            elif k in ['cursor', 'totalCount']:
+            elif k in ["cursor", "totalCount"]:
                 keys_to_delete.append(k)
 
         for k in keys_to_delete:
@@ -167,5 +176,5 @@ class QueryIterator:
         for k, v in node.items():
             if isinstance(v, dict) or isinstance(v, list):
                 self._collapse_result(v)
-                if 'edges' in v:
-                    node[k] = [x['node'] for x in v['edges']]
+                if "edges" in v:
+                    node[k] = [x["node"] for x in v["edges"]]
