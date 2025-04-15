@@ -43,5 +43,5 @@ query deeplyNestedQuery {
 """
 
 client = GitHubGQL()
-data = client.execute_all(four_level_query, page_size=5)
-print(json.dumps(data, cls=GitHubGQL._Encoder))
+data = client.execute_all(query, page_size=5)
+print(json.dumps(data, indent=2))
