@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "github-gql"
+version = "0.0.1"
+authors = [{ name = "Brian Gray", email = "bgraymusic@gmail.com" }]
+description = "A simplified, opinionated way to access the GitHub GraphQL API"
+readme = "README.md"
+requires-python = ">=3.10,<4.0"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "GPL3"
+license-files = ["LICENSE"]
+dependencies = ["gql[requests]", "deepmerge"]
+
+[project.urls]
+Homepage = "https://github.com/bgraymusic/github-gql"
+Issues = "https://github.com/bgraymusic/github-gql/issues"
