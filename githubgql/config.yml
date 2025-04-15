@@ -21,6 +21,7 @@
 ###############################################################################
 
 github_graphql_endpoint: https://api.github.com/graphql
+github_graphql_schema: schema.docs.graphql
 
 paged_selections:
   - key: admins
