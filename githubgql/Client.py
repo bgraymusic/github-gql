@@ -130,6 +130,7 @@ of all the instrumentation, leaving you with a clean data representation.
 
 from __future__ import annotations
 
+from pathlib import Path
 import shlex
 import subprocess
 import sys
@@ -180,25 +181,32 @@ class GitHubGQL:
                 request.
                 Default: 100 (GitHub maximum)
         """
-        pat = (
-            pat
-            or subprocess.run(
-                shlex.split("git config --get user.password"),
-                capture_output=True,
-                text=True,
-            ).stdout.strip()
-        )
+        try:
+            pat = (
+                pat
+                or subprocess.run(
+                    shlex.split("git config --get user.password"),
+                    capture_output=True,
+                    check=True,
+                    text=True,
+                ).stdout.strip()
+            )
+        except subprocess.CalledProcessError:
+            print('GitHubGQL: Implicit Personal Access Token unavailable; try providing one explicitly',
+                  file=sys.stderr)
+            raise
+
         self.default_page_size = default_page_size
 
-        with open("schema.docs.graphql") as f:
+        with open(f"{Path(__file__).parent}/{Config.get().github_graphql_schema}") as f:
             schema_str = f.read()
             gql_transport = RequestsHTTPTransport(
-                url=Config.getInstance().github_graphql_endpoint,
+                url=Config.get().github_graphql_endpoint,
                 headers={"Authorization": f"bearer {pat}"},
             )
             self.gql_client = GQLClient(schema=schema_str, transport=gql_transport)
 
-    def execute_all(self, query: str, *, vars: dict[str, str] = None, page_size: int = None) -> dict[str, Any]:
+    def execute_all(self, query: str, *, vars: dict[str, str] = None, page_size: int = None) -> ResultPage:
         """Execute the provided query to completion, with as many calls as necessary.
 
         Args:
@@ -255,7 +263,7 @@ class GitHubGQL:
         *,
         vars: dict[str, str] = None,
         page_size: int = None,
-    ):
+    ) -> None:
         """Execute the query page by page, calling `callback` for each page.
 
         Args:
