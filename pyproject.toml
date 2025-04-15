@@ -10,13 +10,44 @@ description = "A simplified, opinionated way to access the GitHub GraphQL API"
 readme = "README.md"
 requires-python = ">=3.10,<4.0"
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
     "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-license = "GPL3"
-license-files = ["LICENSE"]
 dependencies = ["gql[requests]", "deepmerge"]
 
 [project.urls]
 Homepage = "https://github.com/bgraymusic/github-gql"
 Issues = "https://github.com/bgraymusic/github-gql/issues"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["githubgql"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yml", "*.json", "*.graphql"]
+
+[tool.mypy]
+python_version = '3.10'
+ignore_missing_imports = true
+namespace_packages = true
+
+[[tool.mypy.overrides]]
+module = ["githubgql.*"]
+check_untyped_defs = true
+disallow_untyped_defs = true
+warn_no_return = false
+
+[tool.black]
+line-length = 120
