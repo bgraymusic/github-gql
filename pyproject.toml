@@ -3,17 +3,17 @@ requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "github-gql"
+name = "github-graphql-paginator"
 version = "0.0.1"
 authors = [{ name = "Brian Gray", email = "bgraymusic@gmail.com" }]
 description = "A simplified, opinionated way to access the GitHub GraphQL API"
 readme = "README.md"
 requires-python = ">=3.10,<4.0"
+license = "GPL-3.0-or-later"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Web Environment",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
