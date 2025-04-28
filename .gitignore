@@ -1,5 +1,6 @@
 # Intentionally local-only files
-local/
+local
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
