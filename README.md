@@ -1,92 +1,131 @@
 # GitHubGQL
 GitHubGQL provides a simplified, opinionated way to access the [GitHub GraphQL API](https://docs.github.com/en/graphql), particularly with respect to handling paging.
 
-## Overview
+## GitHubGQL's primary advantages over straight GraqphQL queries:
+
+### Auto-Paging
+Specify page size and/or direction if you choose, or just leave it up to the defaults. GitHubGQL will handle your query by merging together multiple requests, incrementing arbitrarily nested paging cursors automatically.
+
+### Selectable Execution Mode
+Choose among 3 execution modes:
+
+__All__
+: Execute your query all at once and get the results delivered pre-merged.
+
+__Iterator__
+: Retrieve an interator and get results one page at a time. Use the GitHubGQL Merger to merge them, or operate on them individually.
+
+__Callback__
+: Register a callback to receive page results as they are ready.
+
+### Auto-Adjust of Page Sizes to Fit GitHub Quotas (optional)
+
+__Each Page__
+: Every paged selection must request pages between 1-100 items, inclusive. Values falling outside this range will be adjusted to the nearest acceptable value.
+
+__Total Potential Size__
+: Assuming all pages get filled by the server to their maximum allocated size, the total number of nodes returned from the query must not exceed 500,000. GitHubGQL can (and by default does) automatically reduce page sizes to make your query fit this quota.
+
+### Default Fields (optional)
+
+GraphQL requires the client to specify each and every field it wishes to be returned in the response. GitHubGQL auto-requests basic, common fields essential to the identification of each datum, driven by its Interfaces. If you also specify the same field explicitly, no problem! GitHubGQL handles it.
+
+### Query Cleanup (optional)
+
+Auto-cleanup for common malformation patterns in the input query. At this time the only implementation is deletion of empty bracketed scopes.
+
+### Results Cleanup
+
+Auto-cleanup and simplification of the results you receive back, eliminating now-unnecessary paging data and nesting of collections within edges and nodes.
+
+## Example
 Given a complex, nested query with multiple levels of collections, a standard GQL query to the GitHub API must contain and request instrumentation to manage paging information. This information includes cursors, the total number of elements to expect, and notification of whether or not the request has a next page. In order to complete a request, the client must request additional pages in a bottom-up manner throughout the query graph, only incrementing a cursor when all cursors below it are completed, then reset the lower cursors to their beginning.
 
 Additionally, the GitHub GQL organizes collections into edges and nodes, facilitating true graph navigation. For common use, these edges and nodes can be implicit, allowing the client to speak only in terms of collections of objects. Thus, the following query:
 
 ```
 query deeplyNestedQuery {
-    viewer {
-        id
-        login
-        email
-        repositories(first: 5, after: null) {
+  viewer {
+    email
+    id
+    login
+    name
+    url
+    websiteUrl
+    repositories(first: 72, after: null) {
+      edges {
+        node {
+          createdAt
+          homepageUrl
+          id
+          nameWithOwner
+          url
+          assignableUsers(first: 72, after: null) {
             edges {
-                node {
-                    id
-                    name
-                    description
-                    assignableUsers(first: 5, after: null) {
-                        edges {
-                            node {
-                                id
-                                login
-                                isViewer
-                                contributionsCollection(first: 5, after: null) {
-                                    edges {
-                                        node {
-                                            commitContributionsByRepository(first: 5, after: null, maxRepositories: 5) {
-                                                edges {
-                                                    node {
-                                                        repository {
-                                                            id
-                                                            name
-                                                            createdAt
-                                                        }
-                                                    }
-                                                    cursor
-                                                }
-                                                pageInfo {
-                                                    endCursor
-                                                    hasNextPage
-                                                }
-                                                totalCount
-                                            }
-                                        }
-                                        cursor
-                                    }
-                                    pageInfo {
-                                        endCursor
-                                        hasNextPage
-                                    }
-                                    totalCount
-                                }
-                            }
-                            cursor
+              node {
+                email
+                id
+                login
+                name
+                url
+                websiteUrl
+                contributionsCollection {
+                  commitContributionsByRepository(maxRepositories: 5) {
+                    contributions(first: 72, after: null) {
+                      edges {
+                        node {
+                          url
+                          user {
+                            email
+                            id
+                            login
+                            name
+                            url
+                            websiteUrl
+                          }
+                          repository {
+                            createdAt
+                            homepageUrl
+                            id
+                            nameWithOwner
+                            url
+                          }
                         }
-                        pageInfo {
-                            endCursor
-                            hasNextPage
-                        }
-                        totalCount
+                      }
+                      pageInfo {
+                        endCursor
+                        hasNextPage
+                      }
                     }
+                  }
                 }
-                cursor
+              }
             }
             pageInfo {
-                endCursor
-                hasNextPage
+              endCursor
+              hasNextPage
             }
-            totalCount
+          }
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
     }
+  }
 }
 ```
-…could potentially be reduced to:
+…could be reduced to:
 ```
-query deeplyNestedQuery($maxContributionsRepos: Int) {
+query deeplyNestedQuery {
     viewer {
-        email
         repositories {
-            description
             assignableUsers {
-                isViewer
                 contributionsCollection {
-                    commitContributionsByRepository(maxRepositories: $maxContributionsRepos) {
-                        repository {
-                            createdAt
+                    commitContributionsByRepository(maxRepositories: 5) {
+                        contributions {
+                            repository
                         }
                     }
                 }
@@ -95,7 +134,6 @@ query deeplyNestedQuery($maxContributionsRepos: Int) {
     }
 }
 ```
-In addition to the paging information, the previous example illustrates a separate feature of GitHubGQL. Each collection will automatically fetch a small subset of fields inherent to its identification. Thus where the first query requests fields like `id`, `name`, or `login`, the second can omit those fields and only list non-ID fields like `isViewer` and `createdAt`.
 
 ## Install
 ```
