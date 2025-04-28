@@ -144,6 +144,7 @@ from githubgql.Config import Config
 from githubgql.Merger import ghp_merger
 from githubgql.Paginator import QueryPaginator
 from githubgql.Iterator import QueryIterator
+from githubgql.Paginator import Paginator
 
 
 class GitHubGQL:
@@ -225,7 +226,8 @@ class GitHubGQL:
         Example:
             results = client.execute_all(query, vars, 5)
         """
-        paginator = QueryPaginator(self.gql_client, query, vars, page_size or self.default_page_size)
+        # paginator = QueryPaginator(self.gql_client, query, vars, page_size or self.default_page_size)
+        paginator = Paginator(self.gql_client, query, vars, page_size or self.default_page_size)
         merged_results = {}
         for result in paginator:
             GitHubGQL.Merger.merge(merged_results, result)

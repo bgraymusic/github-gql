@@ -23,404 +23,55 @@
 github_graphql_endpoint: https://api.github.com/graphql
 github_graphql_schema: schema.docs.graphql
 
-paged_selections:
-  - key: admins
-    id_fields: []
-  - key: affiliatedUsersWithTwoFactorDisabled
-    id_fields: []
-  - key: allowPrivateRepositoryForkingSettingOrganizations
-    id_fields: []
-  - key: ancestors
-    id_fields: []
-  - key: annotations
-    id_fields: []
-  - key: assignableUsers
-    id_fields: [id, login]
-  - key: assignees
-    id_fields: []
-  - key: associatedPullRequests
-    id_fields: []
-  - key: auditLog
-    id_fields: []
-  - key: authors
-    id_fields: []
-  - key: branchProtectionRuleConflicts
-    id_fields: []
-  - key: branchProtectionRules
-    id_fields: []
-  - key: bypassActors
-    id_fields: []
-  - key: bypassForcePushAllowances
-    id_fields: []
-  - key: bypassPullRequestAllowances
-    id_fields: []
-  - key: cards
-    id_fields: []
-  - key: checkRuns
-    id_fields: []
-  - key: checkSuites
-    id_fields: []
-  - key: childTeams
-    id_fields: []
-  - key: closedByPullRequestsReferences
-    id_fields: []
-  - key: closingIssuesReferences
-    id_fields: []
-  - key: collaborators
-    id_fields: []
-  - key: columns
-    id_fields: []
-  - key: combinedContexts
-    id_fields: []
-  - key: comments
-    id_fields: []
-  - key: commitComments
-    id_fields: [id, body]
-  - key: commits
-    id_fields: []
-  - key: contexts
-    id_fields: []
-  - key: contributions
-    id_fields: []
-  - key: cwes
-    id_fields: []
-  - key: defaultRepositoryPermissionSettingOrganizations
-    id_fields: []
-  - key: dependencies
-    id_fields: []
-  - key: dependencyGraphManifests
-    id_fields: []
-  - key: deployKeys
-    id_fields: []
-  - key: deploymentReviews
-    id_fields: []
-  - key: deployments
-    id_fields: []
-  - key: discussionCategories
-    id_fields: []
-  - key: discussions
-    id_fields: []
-  - key: domains
-    id_fields: []
-  - key: emails
-    id_fields: []
-  - key: enterpriseOwners
-    id_fields: []
-  - key: enterprises
-    id_fields: []
-  - key: enterpriseInstallations
-    id_fields: []
-  - key: enterpriseServerInstallations
-    id_fields: []
-  - key: entries
-    id_fields: []
-  - key: environments
-    id_fields: []
-  - key: externalIdentities
-    id_fields: []
-  - key: failedInvitations
-    id_fields: []
-  - key: fields
-    id_fields: []
-  - key: fieldValues
-    id_fields: []
-  - key: files
-    id_fields: []
-  - key: followers
-    id_fields: []
-  - key: following
-    id_fields: []
-  - key: forks
-    id_fields: []
-  - key: gistComments
-    id_fields: []
-  - key: gists
-    id_fields: []
-  - key: groupBy
-    id_fields: []
-  - key: groupByFields
-    id_fields: []
-  - key: history
-    id_fields: []
-  - key: invitations
-    id_fields: []
-  - key: ipAllowListEntries
-    id_fields: []
-  - key: issueComments
-    id_fields: []
-  - key: issueContributions
-    id_fields: []
-  - key: issues
-    id_fields: []
-  - key: issueTypes
-    id_fields: []
-  - key: items
-    id_fields: []
-  - key: labels
-    id_fields: [id, description]
-  - key: languages
-    id_fields: []
-  - key: latestOpinionatedReviews
-    id_fields: []
-  - key: latestReviews
-    id_fields: []
-  - key: lifetimeReceivedSponsorshipValues
-    id_fields: []
-  - key: linkedBranches
-    id_fields: []
-  - key: lists
-    id_fields: []
-  - key: mannequins
-    id_fields: []
-  - key: marketplaceListings
-    id_fields: []
-  - key: matchingPullRequests
-    id_fields: []
-  - key: matchingRefs
-    id_fields: []
-  - key: members
-    id_fields: []
-  - key: membersCanChangeRepositoryVisibilitySettingOrganizations
-    id_fields: []
-  - key: membersCanCreateRepositoriesSettingOrganizations
-    id_fields: []
-  - key: membersCanDeleteIssuesSettingOrganizations
-    id_fields: []
-  - key: membersCanDeleteRepositoriesSettingOrganizations
-    id_fields: []
-  - key: membersCanInviteCollaboratorsSettingOrganizations
-    id_fields: []
-  - key: membersCanUpdateProtectedBranchesSettingOrganizations
-    id_fields: []
-  - key: membersCanViewDependencyInsightsSettingOrganizations
-    id_fields: []
-  - key: memberStatuses
-    id_fields: []
-  - key: membersWithRole
-    id_fields: []
-  - key: mentionableUsers
-    id_fields: []
-  - key: mentions
-    id_fields: []
-  - key: milestones
-    id_fields: []
-  - key: onBehalfOf
-    id_fields: []
-  - key: options
-    id_fields: []
-  - key: organizationProjectsSettingOrganizations
-    id_fields: []
-  - key: organizations
-    id_fields: []
-  - key: outsideCollaborators
-    id_fields: []
-  - key: packages
-    id_fields: []
-  - key: parents
-    id_fields: []
-  - key: participants
-    id_fields: []
-  - key: pendingAdminInvitations
-    id_fields: []
-  - key: pendingCards
-    id_fields: []
-  - key: pendingCollaboratorInvitations
-    id_fields: []
-  - key: pendingDeploymentRequests
-    id_fields: []
-  - key: pendingMemberInvitations
-    id_fields: []
-  - key: pendingMembers
-    id_fields: []
-  - key: pendingUnaffiliatedMemberInvitations
-    id_fields: []
-  - key: pinnableItems
-    id_fields: []
-  - key: pinnedDiscussions
-    id_fields: []
-  - key: pinnedEnvironments
-    id_fields: []
-  - key: pinnedIssues
-    id_fields: []
-  - key: pinnedItems
-    id_fields: []
-  - key: projectCards
-    id_fields: []
-  - key: projectItems
-    id_fields: []
-  - key: projects
-    id_fields: []
-  - key: projectsV2
-    id_fields: []
-  - key: projectV2Items
-    id_fields: []
-  - key: protectionRules
-    id_fields: []
-  - key: publicKeys
-    id_fields: []
-  - key: pullRequestContributions
-    id_fields: []
-  - key: pullRequestReviewContributions
-    id_fields: []
-  - key: pullRequests
-    id_fields: []
-  - key: pushAllowances
-    id_fields: []
-  - key: reactions
-    id_fields: []
-  - key: reactors
-    id_fields: []
-  - key: recentProjects
-    id_fields: []
-  - key: refs
-    id_fields: []
-  - key: releaseAssets
-    id_fields: []
-  - key: releases
-    id_fields: []
-  - key: relevantOrganizations
-    id_fields: []
-  - key: relevantTeams
-    id_fields: []
-  - key: replies
-    id_fields: []
-  - key: repositories
-    id_fields: [id, name]
-  - key: repositoriesContributedTo
-    id_fields: []
-  - key: repositoryContributions
-    id_fields: []
-  - key: repositoryDeployKeySettingOrganizations
-    id_fields: []
-  - key: repositoryDiscussionComments
-    id_fields: []
-  - key: repositoryDiscussions
-    id_fields: []
-  - key: repositoryMigrations
-    id_fields: []
-  - key: repositoryProjectsSettingOrganizations
-    id_fields: []
-  - key: repositoryDiscussionComments
-    id_fields: []
-  - key: repositoryDiscussions
-    id_fields: []
-  - key: repositoryTopics
-    id_fields: []
-  - key: reviewDismissalAllowances
-    id_fields: []
-  - key: reviewers
-    id_fields: []
-  - key: reviewRequests
-    id_fields: []
-  - key: reviews
-    id_fields: []
-  - key: reviewThreads
-    id_fields: []
-  - key: rules
-    id_fields: []
-  - key: rulesets
-    id_fields: []
-  - key: runs
-    id_fields: []
-  - key: samlIdentityProviderSettingOrganizations
-    id_fields: []
-  - key: savedReplies
-    id_fields: []
-  - key: search
-    id_fields: []
-  - key: securityAdvisories
-    id_fields: []
-  - key: securityVulnerabilities
-    id_fields: []
-  - key: socialAccounts
-    id_fields: []
-  - key: sortBy
-    id_fields: []
-  - key: sortByFields
-    id_fields: []
-  - key: sponsorables
-    id_fields: []
-  - key: sponsoring
-    id_fields: []
-  - key: sponsors
-    id_fields: []
-  - key: sponsorsActivities
-    id_fields: []
-  - key: sponsorshipNewsletters
-    id_fields: []
-  - key: sponsorships
-    id_fields: []
-  - key: sponsorshipsAsMaintainer
-    id_fields: []
-  - key: sponsorshipsAsSponsor
-    id_fields: []
-  - key: stargazers
-    id_fields: []
-  - key: starredRepositories
-    id_fields: []
-  - key: statuses
-    id_fields: []
-  - key: statusUpdates
-    id_fields: []
-  - key: steps
-    id_fields: []
-  - key: subIssues
-    id_fields: []
-  - key: submodules
-    id_fields: []
-  - key: supportEntitlements
-    id_fields: []
-  - key: teamDiscussionsSettingOrganizations
-    id_fields: []
-  - key: teams
-    id_fields: []
-  - key: tiers
-    id_fields: []
-  - key: timeline
-    id_fields: []
-  - key: timelineItems
-    id_fields: []
-  - key: topRepositories
-    id_fields: []
-  - key: trackedInIssues
-    id_fields: []
-  - key: trackedIssues
-    id_fields: []
-  - key: twoFactorRequiredSettingOrganizations
-    id_fields: []
-  - key: userAccounts
-    id_fields: []
-  - key: userAccountsUploads
-    id_fields: []
-  - key: userContentEdits
-    id_fields: []
-  - key: userNamespaceRepositories
-    id_fields: []
-  - key: users
-    id_fields: []
-  - key: versions
-    id_fields: []
-  - key: verticalGroupBy
-    id_fields: []
-  - key: verticalGroupByFields
-    id_fields: []
-  - key: views
-    id_fields: []
-  - key: visibleFields
-    id_fields: []
-  - key: vulnerabilityAlerts
-    id_fields: []
-  - key: vulnerabilities
-    id_fields: []
-  - key: watchers
-    id_fields: []
-  - key: watching
-    id_fields: []
-  - key: workflows
-    id_fields: []
+# Default fields by interface
+interfaces:
+  Actor: [login, url]
+  Comment: [author, createdAt, id]
+  Contribution: [occurredAt, url, user]
+  EnterpriseAuditEntryData: [enterpriseUrl]
+  GitObject: [commitUrl, id, oid]
+  GitSignature: [email, signer, state]
+  Migration: [createdAt, id, state]
+  Node: [id]
+  OauthApplicationAuditEntryData: [oauthApplicationName, oauthApplicationUrl]
+  PackageOwner: [id]
+  ProfileOwner: [email, id, login, name, websiteUrl]
+  ProjectV2FieldCommon: [createdAt, id, name]
+  ProjectV2ItemFieldValueCommon: [createdAt, id]
+  ProjectV2Owner: [id]
+  Reactable: [id]
+  RepositoryAuditEntryData: [repositoryUrl]
+  RepositoryInfo: [createdAt, homepageUrl, nameWithOwner, url]
+  RepositoryOwner: [id, login, url]
+  Starrable: [id]
+  Subscribable: [id]
+  SubscribableThread: [id]
+  TeamAuditEntryData: [teamName, teamUrl]
+  TopicAuditEntryData: [topicName]
+  UniformResourceLocatable: [url]
 
-unpaged_selections:
-  - key: repository
-    id_fields: [id, name]
-  - key: viewer
-    id_fields: [id, login]
+# To merge across pages, objects need some kind of identifier to match on.
+# Usually we use 'id', but some types do not have that field. Here we
+# designate what field(s) to use for matching.
+no_id_types:
+  BranchProtectionRuleConflict: NA
+  CheckAnnotation: NA
+  CheckStep: NA
+  CreatedCommitContribution: NA
+  CreatedIssueContribution: NA
+  CreatedPullRequestContribution: NA
+  CreatedPullRequestReviewContribution: NA
+  CreatedRepositoryContribution: NA
+  DependencyGraphDependency: NA
+  DeploymentProtectionRule: NA
+  DeploymentReques: NAt
+  GitActor: NA
+  ProjectV2ItemFieldValue: NA
+  ProjectV2SortBy: NA
+  ProjectV2SortByField: NA
+  PullRequestChangedFile: NA
+  PullRequestTimelineItems: NA
+  SecurityVulnerability: NA
+  SocialAccount: url
+  SponsorAndLifetimeValue: NA
+  Submodule: NA
