@@ -39,7 +39,9 @@ class Config:
         self.dir = Path(__file__).parent
         self.github_graphql_endpoint = None
         self.github_graphql_schema = None
+        self.gh_gql_schema_bin = None
         self.interfaces = None
+        self.merge_match_keys = None
 
         with open(f"{self.dir}/config.yml", "r") as f:
             data = yaml.load(f.read(), yaml.BaseLoader)

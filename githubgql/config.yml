@@ -22,8 +22,9 @@
 
 github_graphql_endpoint: https://api.github.com/graphql
 github_graphql_schema: schema.docs.graphql
+gh_gql_schema_bin: graphql_schema.bin
 
-# Default fields by interface
+# Default fields to fetch by interface
 interfaces:
   Actor: [login, url]
   Comment: [author, createdAt, id]
@@ -50,28 +51,18 @@ interfaces:
   TopicAuditEntryData: [topicName]
   UniformResourceLocatable: [url]
 
-# To merge across pages, objects need some kind of identifier to match on.
-# Usually we use 'id', but some types do not have that field. Here we
-# designate what field(s) to use for matching.
-no_id_types:
-  BranchProtectionRuleConflict: NA
-  CheckAnnotation: NA
-  CheckStep: NA
-  CreatedCommitContribution: NA
-  CreatedIssueContribution: NA
-  CreatedPullRequestContribution: NA
-  CreatedPullRequestReviewContribution: NA
-  CreatedRepositoryContribution: NA
-  DependencyGraphDependency: NA
-  DeploymentProtectionRule: NA
-  DeploymentReques: NAt
-  GitActor: NA
-  ProjectV2ItemFieldValue: NA
-  ProjectV2SortBy: NA
-  ProjectV2SortByField: NA
-  PullRequestChangedFile: NA
-  PullRequestTimelineItems: NA
-  SecurityVulnerability: NA
-  SocialAccount: url
-  SponsorAndLifetimeValue: NA
-  Submodule: NA
+# To merge across pages, objects with groups of subobjects need some kind of
+# identifier to match on. Usually we use 'id', but some types do not have one.
+# Here we designate a sorted (highest priority first) list of keys to look
+# for. If none is found, do not merge this item.
+merge_match_keys:
+  - id
+  - databaseId
+  - number
+  - url
+  - gitUrl
+  - path
+  - packageName
+  - waitTimerStartedAt
+  - updatedAt
+  - date

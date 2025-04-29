@@ -6,10 +6,12 @@ import sys
 from typing import Any
 
 from graphql import (
-    GraphQLScalarType, ObjectTypeDefinitionNode, StringValueNode, build_schema, parse,
+    GraphQLScalarType, StringValueNode, parse,
     ArgumentNode, DocumentNode, FieldNode, GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLObjectType,
-    GraphQLSchema, IntValueNode, NameNode, NullValueNode, OperationDefinitionNode, OperationType, SelectionSetNode
+    IntValueNode, NameNode, NullValueNode, OperationDefinitionNode, OperationType, SelectionSetNode
 )
+
+from githubgql.Schema import Schema
 
 from .Config import Config
 from .PathKey import PathKey
@@ -43,25 +45,10 @@ class Query:
         locale.setlocale(locale.LC_ALL, '')
 
         with open(f'{Config.get().dir}/{Config.get().github_graphql_schema}') as f:
-            schema_str = f.read()
-            self.schema: GraphQLSchema = build_schema(schema_str, no_location=True)
-            self._log_out_schema_stuff()
-            exit(0)
             if cleanup_query:
                 query = self._cleanup_query(query)
             self.doc = self._build_ast(query)
             self._validate_quotas(adjust_page_sizes_for_quota)
-
-    def _log_out_schema_stuff(self):
-        paged_types = sorted(set([v.fields['nodes'].type.of_type.name
-                          for k, v in self.schema.type_map.items()
-                          if k.endswith('Connection')]))
-        for v in [v for k, v in self.schema.type_map.items() if k in paged_types]:
-            if hasattr(v, 'types'):
-                if not all(['id' in x.fields for x in v.types]):
-                    print(v.name)
-            elif not 'id' in v.fields:
-                print(v.name)
 
     def get_doc(self):
         return self.doc
@@ -128,7 +115,7 @@ class Query:
         path = PathKey()
         for definition in doc.definitions:
             if isinstance(definition, OperationDefinitionNode) and definition.operation == OperationType.QUERY:
-                self._build_query(definition, self.schema.query_type, path.copy())
+                self._build_query(definition, Schema.get().query_type, path.copy())
         return doc
 
     def _build_query(self, query_node: OperationDefinitionNode, schema_node: GraphQLObjectType, path: PathKey):
@@ -166,7 +153,9 @@ class Query:
 
         current_fields = ([x.name.value for x in query_node.selection_set.selections]
                           if query_node.selection_set else [])
-        default_fields = []
+        schema_node_type = self._get_schema_node_type(schema_node)
+        merge_field = next((x for x in Config.get().merge_match_keys if x in schema_node_type.fields), False)
+        default_fields = [merge_field] if merge_field else []
         for interface in [x.name for x in interfaces]:
             default_fields += self.interfaces_lookup[interface] if interface in self.interfaces_lookup else []
         to_be_added = tuple(FieldNode(name=NameNode(value=x), directives=[], arguments=[])

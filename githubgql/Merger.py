@@ -30,6 +30,8 @@ from deepmerge.extended_set import ExtendedSet
 from deepmerge.merger import Merger
 from deepmerge.strategy.core import STRATEGY_END
 
+from .Config import Config
+
 
 T = TypeVar("T")
 
@@ -42,19 +44,17 @@ def strategy_merge_paged_selections(config: Merger, path: list, base: list, nxt:
         non_nodes: list = []
         for k, v in enumerate(nxt):
             if _is_edge(v):
-                base_edge = next((x for x in base if _is_edge(x) and x["node"]["id"] == v["node"]["id"]), False)
-                if base_edge:
-                    base_edge = config.value_strategy(path + [k], base_edge, v)
-                else:
-                    non_nodes.append(v)
-            elif _has_id(v):
-                base_edge = next((x for x in base if _has_id(x) and x["id"] == v["id"]), False)
+                base_edge = _find_base_for_edge(base, v)
                 if base_edge:
                     base_edge = config.value_strategy(path + [k], base_edge, v)
                 else:
                     non_nodes.append(v)
             else:
-                non_nodes.append(v)
+                base_node = _find_base_for_node(base, v)
+                if base_node:
+                    base_node = config.value_strategy(path + [k], base_node, v)
+                else:
+                    non_nodes.append(v)
 
         base_as_set = ExtendedSet(base)
         base = base + [x for x in non_nodes if x not in base_as_set]
@@ -62,9 +62,25 @@ def strategy_merge_paged_selections(config: Merger, path: list, base: list, nxt:
     return base
 
 
+def _find_base_for_edge(base: list, edge: dict):
+    key = next((x for x in Config.get().merge_match_keys if x in edge["node"]), False)
+    if not key:
+        return None
+    base_edge = next((x for x in base if _has_id(x) and x["node"][key] == edge["node"][key]), None)
+    return base_edge
+
+
+def _find_base_for_node(base: list, node: dict):
+    key = next((x for x in Config.get().merge_match_keys if x in node), False)
+    if not key:
+        return None
+    base_node = next((x for x in base if _has_id(x) and x[key] == node[key]), None)
+    return base_node
+
+
 def _is_edge(node: dict):
     """Return whether or not this node is an `edges` node."""
-    return isinstance(node, dict) and "node" in node and "id" in node["node"]
+    return isinstance(node, dict) and "node" in node
 
 
 def _has_id(node: dict):
