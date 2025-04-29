@@ -25,7 +25,7 @@ class Results:
         self._clean_up_pagination(result)
         self._collapse_edges_and_nodes(result)
 
-    def to_dict(self):
+    def to_dict(self) -> ResultNode:
         return self._result_data
 
     def has_more_pages(self) -> bool:
