@@ -140,11 +140,12 @@ from deepmerge.merger import Merger as DeepmergeMerger
 from gql import Client as GQLClient
 from gql.transport.requests import RequestsHTTPTransport
 
-from githubgql.Config import Config
-from githubgql.Merger import ghp_merger
-from githubgql.Paginator import QueryPaginator
-from githubgql.Iterator import QueryIterator
-from githubgql.Paginator import Paginator
+from githubgql.Schema import Schema
+
+from .Clock import Clock
+from .Config import Config
+from .Merger import ghp_merger
+from .Paginator import Paginator
 
 
 class GitHubGQL:
@@ -166,6 +167,7 @@ class GitHubGQL:
 
     Merger: DeepmergeMerger = ghp_merger
     ResultPage: TypeAlias = dict[str, dict | list | str]
+    Iterator: TypeAlias = Paginator
     Callback: TypeAlias = Callable[[ResultPage], bool]
 
     def __init__(self, pat: str = None, *, default_page_size: int = 100):
@@ -193,19 +195,13 @@ class GitHubGQL:
                 ).stdout.strip()
             )
         except subprocess.CalledProcessError:
-            print('GitHubGQL: Implicit Personal Access Token unavailable; try providing one explicitly',
-                  file=sys.stderr)
+            print('GitHubGQL: Implicit Personal Access Token unavailable; provide one explicitly', file=sys.stderr)
             raise
 
         self.default_page_size = default_page_size
-
-        with open(f"{Path(__file__).parent}/{Config.get().github_graphql_schema}") as f:
-            schema_str = f.read()
-            gql_transport = RequestsHTTPTransport(
-                url=Config.get().github_graphql_endpoint,
-                headers={"Authorization": f"bearer {pat}"},
-            )
-            self.gql_client = GQLClient(schema=schema_str, transport=gql_transport)
+        gql_transport = RequestsHTTPTransport(url=Config.get().github_graphql_endpoint,
+                                              headers={"Authorization": f"bearer {pat}"})
+        self.gql_client = GQLClient(schema=Schema.get(), transport=gql_transport)
 
     def execute_all(self, query: str, *, vars: dict[str, str] = None, page_size: int = None) -> ResultPage:
         """Execute the provided query to completion, with as many calls as necessary.
@@ -226,14 +222,13 @@ class GitHubGQL:
         Example:
             results = client.execute_all(query, vars, 5)
         """
-        # paginator = QueryPaginator(self.gql_client, query, vars, page_size or self.default_page_size)
         paginator = Paginator(self.gql_client, query, vars, page_size or self.default_page_size)
         merged_results = {}
         for result in paginator:
             GitHubGQL.Merger.merge(merged_results, result)
         return merged_results
 
-    def execute_iter(self, query: str, *, vars: dict[str, str] = None, page_size: int = None) -> QueryIterator:
+    def execute_iter(self, query: str, *, vars: dict[str, str] = None, page_size: int = None) -> Iterator:
         """Return an iterator for the provided query.
 
         Args:
@@ -256,7 +251,7 @@ class GitHubGQL:
                     # Got what we need
                     break
         """
-        return QueryPaginator(self.gql_client, query, vars, page_size or self.default_page_size).__iter__()
+        return Paginator(self.gql_client, query, vars, page_size or self.default_page_size).__iter__()
 
     def execute_callback(
         self,
@@ -295,7 +290,7 @@ class GitHubGQL:
 
             client.execute_callback(callback)
         """
-        paginator = QueryPaginator(self.gql_client, query, vars, page_size or self.default_page_size)
+        paginator = Paginator(self.gql_client, query, vars, page_size or self.default_page_size)
         try:
             for result in paginator:
                 if not callback(result):
