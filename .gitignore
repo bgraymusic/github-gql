@@ -1,6 +1,8 @@
 # Intentionally local-only files
 local
+graphql_schema.bin
 .vscode
+/*.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
