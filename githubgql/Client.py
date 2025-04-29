@@ -170,7 +170,11 @@ class GitHubGQL:
     Iterator: TypeAlias = Paginator
     Callback: TypeAlias = Callable[[ResultPage], bool]
 
-    def __init__(self, pat: str = None, *, default_page_size: int = 100):
+    def __init__(self, pat: str = None, *,
+                 default_page_size: int = 100,
+                 auto_fit_quotas = True,
+                 inject_default_fields = True,
+                 cleanup_query = True):
         """Construct a GitHub GraphQL client.
 
         Args:
@@ -183,27 +187,38 @@ class GitHubGQL:
                 basis. Many calls may be required to fulfill a complicated
                 request.
                 Default: 100 (GitHub maximum)
+            auto_fit_quotas: Automatically adjust the default page size to be
+                between 1-100, and proportionally auto-adjust all page sizes
+                to keep the total query <= 500,000 nodes.
+                Default: True
+            inject_default_fields: Automatically inject fields into nodes that
+                GitHubGQL has determined are commonly used to identify that
+                type, such as `id`, `url`, or `number`. Fields necessary to
+                disambiguate and merge paged lists will be injected regardless
+                of this argument.
+                Default: True
+            cleanup_query: Automatically detect and correct common mistakes in
+                query construction. Override to fail loudly and do your own
+                corrections.
+                Default: True
         """
         try:
-            pat = (
-                pat
-                or subprocess.run(
-                    shlex.split("git config --get user.password"),
-                    capture_output=True,
-                    check=True,
-                    text=True,
-                ).stdout.strip()
-            )
+            pat = (pat or
+                   subprocess.run(shlex.split("git config --get user.password"), 
+                                  capture_output=True, check=True, text=True).stdout.strip())
         except subprocess.CalledProcessError:
             print('GitHubGQL: Implicit Personal Access Token unavailable; provide one explicitly', file=sys.stderr)
             raise
 
-        self.default_page_size = default_page_size
+        self.default_page_size = min(max(default_page_size, 1), 100) if auto_fit_quotas else default_page_size
+        self.auto_fit_quotas = auto_fit_quotas
+        self.inject_default_fields = inject_default_fields
+        self.cleanup_query = cleanup_query
         gql_transport = RequestsHTTPTransport(url=Config.get().github_graphql_endpoint,
                                               headers={"Authorization": f"bearer {pat}"})
         self.gql_client = GQLClient(schema=Schema.get(), transport=gql_transport)
 
-    def execute_all(self, query: str, *, vars: dict[str, str] = None, page_size: int = None) -> ResultPage:
+    def execute_all(self, query: str, *, vars: dict[str, str] = None) -> ResultPage:
         """Execute the provided query to completion, with as many calls as necessary.
 
         Args:
@@ -211,8 +226,6 @@ class GitHubGQL:
                 described by online documentation, or a simplified, GitHub-only
                 version with auto-pagination as described above.
             vars: The variables to substitute into the query.
-            page_size: Optionally override the default page size set at object
-                construction.
 
         Returns:
             A dictionary containing the results of the query executed. If a
@@ -222,13 +235,14 @@ class GitHubGQL:
         Example:
             results = client.execute_all(query, vars, 5)
         """
-        paginator = Paginator(self.gql_client, query, vars, page_size or self.default_page_size)
+        paginator = Paginator(self.gql_client, query, vars, page_size=self.default_page_size,
+                              auto_fit_quotas=self.auto_fit_quotas)
         merged_results = {}
         for result in paginator:
             GitHubGQL.Merger.merge(merged_results, result)
         return merged_results
 
-    def execute_iter(self, query: str, *, vars: dict[str, str] = None, page_size: int = None) -> Iterator:
+    def execute_iter(self, query: str, *, vars: dict[str, str] = None) -> Iterator:
         """Return an iterator for the provided query.
 
         Args:
@@ -236,8 +250,6 @@ class GitHubGQL:
                 described by online documentation, or a simplified, GitHub-only
                 version with auto-pagination as described above.
             vars: The variables to substitute into the query.
-            page_size: Optionally override the default page size set at object
-                construction.
 
         Returns:
             An iterator allowing the client to control their own merging
@@ -251,16 +263,9 @@ class GitHubGQL:
                     # Got what we need
                     break
         """
-        return Paginator(self.gql_client, query, vars, page_size or self.default_page_size).__iter__()
+        return Paginator(self.gql_client, query, vars, self.default_page_size).__iter__()
 
-    def execute_callback(
-        self,
-        callback: GitHubGQL.Callback,
-        query: str,
-        *,
-        vars: dict[str, str] = None,
-        page_size: int = None,
-    ) -> None:
+    def execute_callback(self, callback: GitHubGQL.Callback, query: str, *, vars: dict[str, str] = None) -> None:
         """Execute the query page by page, calling `callback` for each page.
 
         Args:
@@ -272,8 +277,6 @@ class GitHubGQL:
                 described by online documentation, or a simplified, GitHub-only
                 version with auto-pagination as described above.
             vars: The variables to substitute into the query.
-            page_size: Optionally override the default page size set at object
-                construction.
 
         Returns:
             Nothing
@@ -290,7 +293,7 @@ class GitHubGQL:
 
             client.execute_callback(callback)
         """
-        paginator = Paginator(self.gql_client, query, vars, page_size or self.default_page_size)
+        paginator = Paginator(self.gql_client, query, vars, self.default_page_size)
         try:
             for result in paginator:
                 if not callback(result):

@@ -8,10 +8,12 @@ from .PathKey import PathKey
 
 
 class Paginator:
-    def __init__(self, gql_client: GQLClient, query_str: str, vars: dict[str, str], page_size):
+    def __init__(self, gql_client: GQLClient, query_str: str, vars: dict[str, str], *,
+                 page_size = 100, auto_fit_quotas = True, inject_default_fields = True, cleanup_query = True):
         """Construct a paginator for the query provided"""
         self.gql_client = gql_client
-        self.query = Query(query_str, default_page_size=page_size)
+        self.query = Query(query_str, default_page_size=page_size, auto_fit_quotas=auto_fit_quotas,
+                           inject_default_fields=inject_default_fields, cleanup_query=cleanup_query)
         self.vars = vars
         self.complete = False
 

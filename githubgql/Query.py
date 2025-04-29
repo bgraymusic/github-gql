@@ -35,11 +35,11 @@ class Query:
 
     def __init__(self, query: str, *,
                  default_page_size: int = 100,
-                 insert_default_fields = True,
-                 cleanup_query = True,
-                 adjust_page_sizes_for_quota = True):
+                 auto_fit_quotas = True,
+                 inject_default_fields = True,
+                 cleanup_query = True):
         self.default_page_size = default_page_size
-        self.insert_default_fields = insert_default_fields
+        self.inject_default_fields = inject_default_fields
         self.paged_nodes: dict[PathKey, Query.PagedNodeInfo] = {}
         self.interfaces_lookup = Config.get().interfaces
         locale.setlocale(locale.LC_ALL, '')
@@ -48,7 +48,7 @@ class Query:
             if cleanup_query:
                 query = self._cleanup_query(query)
             self.doc = self._build_ast(query)
-            self._validate_quotas(adjust_page_sizes_for_quota)
+            self._validate_quotas(auto_fit_quotas)
 
     def get_doc(self):
         return self.doc
@@ -126,7 +126,7 @@ class Query:
                 self._build_node(node, schema_node.fields[node.name.value], sub_path)
 
     def _build_node(self, query_node: FieldNode, schema_node: GraphQLField, path: PathKey) -> None:
-        if self.insert_default_fields:
+        if self.inject_default_fields:
             self._fill_out_default_sub_fields(query_node, schema_node)
 
         if self._is_paged_node(schema_node):
