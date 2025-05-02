@@ -10,7 +10,7 @@ To use GitHubGQL, first install it using pip:
 
 .. code-block:: console
 
-   (.venv) $ pip install githubgql
+   (.venv) $ pip install github-graphql-paginator
 
 Querying from the GitHub GraphQL API
 ------------------------------------
