@@ -39,9 +39,11 @@ class Merger(DeepmergeMerger):
     T = TypeVar("T")
 
     def __init__(self):
-        super().__init__(Merger.GITHUB_GRAPHQL_TYPE_SPECIFIC_MERGE_STRATEGIES,
-                         Merger.GITHUB_GRAPHQL_FALLBACK_STRATEGIES,
-                         Merger.GITHUB_GRAPHQL_TYPE_CONFLICT_STRATEGIES)
+        super().__init__(
+            Merger.GITHUB_GRAPHQL_TYPE_SPECIFIC_MERGE_STRATEGIES,
+            Merger.GITHUB_GRAPHQL_FALLBACK_STRATEGIES,
+            Merger.GITHUB_GRAPHQL_TYPE_CONFLICT_STRATEGIES,
+        )
 
     @staticmethod
     def _strategy_merge_paged_selections(config: Merger, path: list, base: list, nxt: list) -> list:

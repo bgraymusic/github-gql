@@ -160,11 +160,15 @@ class GitHubGQL:
     Callback: TypeAlias = Callable[[ResultPage], bool]
     "A function that can be passed into execute_callback for page-by-page processing."
 
-    def __init__(self, pat: str = None, *,
-                 default_page_size: int = 100,
-                 auto_fit_quotas = True,
-                 inject_default_fields = True,
-                 cleanup_query = True):
+    def __init__(
+        self,
+        pat: str = None,
+        *,
+        default_page_size: int = 100,
+        auto_fit_quotas=True,
+        inject_default_fields=True,
+        cleanup_query=True,
+    ):
         """Construct a GitHub GraphQL client.
 
         Args:
@@ -192,21 +196,25 @@ class GitHubGQL:
                 corrections.
                 Default: True
         """
-        with Clock('Constructing GitHubGQL client'):
+        with Clock("Constructing GitHubGQL client"):
             try:
-                pat = (pat or
-                    subprocess.run(shlex.split("git config --get user.password"), 
-                                    capture_output=True, check=True, text=True).stdout.strip())
+                pat = (
+                    pat
+                    or subprocess.run(
+                        shlex.split("git config --get user.password"), capture_output=True, check=True, text=True
+                    ).stdout.strip()
+                )
             except subprocess.CalledProcessError:
-                print('GitHubGQL: Implicit Personal Access Token unavailable; provide one explicitly', file=sys.stderr)
+                print("GitHubGQL: Implicit Personal Access Token unavailable; provide one explicitly", file=sys.stderr)
                 raise
 
             self.default_page_size = min(max(default_page_size, 1), 100) if auto_fit_quotas else default_page_size
             self.auto_fit_quotas = auto_fit_quotas
             self.inject_default_fields = inject_default_fields
             self.cleanup_query = cleanup_query
-            gql_transport = RequestsHTTPTransport(url=Config.get().github_graphql_endpoint,
-                                                headers={"Authorization": f"bearer {pat}"})
+            gql_transport = RequestsHTTPTransport(
+                url=Config.get().github_graphql_endpoint, headers={"Authorization": f"bearer {pat}"}
+            )
             self.gql_client = GQLClient(schema=Schema.get(), transport=gql_transport)
 
     def execute_all(self, query: str, *, vars: dict[str, str] = None) -> ResultPage:
@@ -227,8 +235,9 @@ class GitHubGQL:
 
             results = client.execute_all(query, vars, 5)
         """
-        paginator = Paginator(self.gql_client, query, vars, page_size=self.default_page_size,
-                              auto_fit_quotas=self.auto_fit_quotas)
+        paginator = Paginator(
+            self.gql_client, query, vars, page_size=self.default_page_size, auto_fit_quotas=self.auto_fit_quotas
+        )
         merged_results = {}
         for result in paginator:
             GitHubGQL.Merger.merge(merged_results, result)

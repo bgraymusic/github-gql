@@ -28,7 +28,7 @@ import yaml
 
 class Config:
     """Access to config.yml data
-    
+
     Usage::
 
         Config.get().github_graphql_schema  # the Github GraphQL schema filename

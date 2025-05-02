@@ -65,6 +65,6 @@ class Schema:
                 sys.setrecursionlimit(5000)
                 dill.dump(schema, f)
         except PermissionError:
-            print('Another process is already writing to the binary schema file', file=sys.stderr)
+            print("Another process is already writing to the binary schema file", file=sys.stderr)
         except OSError:
             raise

@@ -22,6 +22,7 @@ class Results:
         cursor: str
         count: int
         done: bool
+
         def to_dict(self):
             return asdict(self)
 
@@ -31,11 +32,11 @@ class Results:
     def __init__(self, result: ResultNode):
         self._result_data = result
         self._updates: Results.UpdateMapping = {}
-        with Clock('Building pagination updates'):
+        with Clock("Building pagination updates"):
             self._has_more_pages = self._build_pagination_updates(result, PathKey())
-        with Clock('Cleaning up pagination artifacts'):
+        with Clock("Cleaning up pagination artifacts"):
             self._clean_up_pagination(result)
-        with Clock('Collapsing edges and nodes'):
+        with Clock("Collapsing edges and nodes"):
             self._collapse_edges_and_nodes(result)
 
     def to_dict(self) -> ResultNode:
@@ -57,10 +58,10 @@ class Results:
             ignore_sub_path or sub_path.append(k)
             self._build_pagination_updates(v, sub_path)
 
-        if 'pageInfo' in node:
-            cursor = next((v for k, v in node['pageInfo'].items() if k in ['endCursor', 'startCursor']))
-            count = len(next((v for k, v in node.items() if k in ['edges', 'nodes'])))
-            done = not next((v for k, v in node['pageInfo'].items() if k in ['hasNextPage', 'hasPreviousPage']))
+        if "pageInfo" in node:
+            cursor = next((v for k, v in node["pageInfo"].items() if k in ["endCursor", "startCursor"]))
+            count = len(next((v for k, v in node.items() if k in ["edges", "nodes"])))
+            done = not next((v for k, v in node["pageInfo"].items() if k in ["hasNextPage", "hasPreviousPage"]))
             self._updates[path] = self._updates[path] if path in self._updates else []
             self._updates[path].append(Results.CursorInfo(cursor=cursor, count=count, done=done))
         else:
@@ -73,8 +74,8 @@ class Results:
         for v in [v for k, v in node.items() if isinstance(v, dict) or isinstance(v, list)]:
             self._clean_up_pagination(v)
 
-        if 'pageInfo' in node:
-            del node['pageInfo']
+        if "pageInfo" in node:
+            del node["pageInfo"]
 
     def _collapse_edges_and_nodes(self, node: ResultNode) -> None:
         if isinstance(node, list):
