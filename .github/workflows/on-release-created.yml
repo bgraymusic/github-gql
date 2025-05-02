@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Get all to be sure we can always grab the latest tag
 
       - name: Setup Python
         uses: actions/setup-python@v5
