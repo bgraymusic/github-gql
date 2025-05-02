@@ -98,7 +98,7 @@ class Query:
             query_size = self._get_query_size()
             if query_size > Query.HARD_NODE_LIMIT:
                 print(f'Aggregate query size over quota ({query_size:n} > {Query.HARD_NODE_LIMIT:n}). '
-                    f'{'Adjusting…' if adjust else ''}', file=sys.stderr)
+                    f'{'Adjusting...' if adjust else ''}', file=sys.stderr)
                 if adjust:
                     while query_size > Query.HARD_NODE_LIMIT:
                         self._nudge_down_page_sizes()
