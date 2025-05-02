@@ -12,7 +12,7 @@ defaults:
 jobs:
   publish-to-pypi:
     # push can be on branch or tag; we want only tags
-    if: startsWith(github.event.ref, 'refs/tags/')
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
     steps:
