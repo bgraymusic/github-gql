@@ -19,6 +19,12 @@
 # along with PyGithub. If not, see <http://www.gnu.org/licenses/>.            #
 #                                                                             #
 ###############################################################################
+"""
+The primary entry point is :class:`githubgql.Client.GitHubGQL`. This is where
+you set up your authentication credentials and tell the system how to behave.
+From there, queries, mutations, and other operations are triggered by calling
+selected `execute_*` methods.
+"""
 
 from .Client import GitHubGQL
 
