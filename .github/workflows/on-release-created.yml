@@ -28,7 +28,7 @@ jobs:
         run: pip install --upgrade build twine packaging
 
       - name: Build
-        run: pip -m build
+        run: python -m build
 
       - name: Check Package
         run: twine check dist/*
