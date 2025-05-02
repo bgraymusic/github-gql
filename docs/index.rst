@@ -1,7 +1,9 @@
 Welcome to GitHubGQL's documentation!
 =====================================
 
-**GitHubGQL** provides a simplified, opinionated way to access the [GitHub GraphQL API](https://docs.github.com/en/graphql), particularly with respect to handling paging.
+**GitHubGQL** provides a simplified, opinionated way to access the
+`GitHub GraphQL API <https://docs.github.com/en/graphql>`_, particularly with
+respect to handling paging.
 
 Check out the :doc:`usage` section for further information, including
 :ref:`installation` of the library.
@@ -16,4 +18,4 @@ Contents
 .. toctree::
 
    usage
-   api
+   reference
