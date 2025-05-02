@@ -1,6 +1,9 @@
 name: On Release Created
 
-on: create # does not support filtering by type (tag), must do later
+on:
+  push:
+    tags: ['*']
+  workflow_dispatch:
 
 defaults:
   run:
@@ -8,16 +11,30 @@ defaults:
 
 jobs:
   publish-to-pypi:
-    if: github.event.ref_type == 'tag' # create can be branches or tags; we want only tags
+    # push can be on branch or tag; we want only tags
+    if: startsWith(github.event.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+
+      - name: Install Dependencies
+        run: pip install --upgrade build twine packaging
+
+      - name: Build
+        run: pip -m build
+
+      - name: Check Package
+        run: twine check dist/*
+
+      - name: Publish to PyPi
+        run: twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}

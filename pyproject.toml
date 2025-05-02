@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "github-graphql-paginator"
-version = "0.0.1"
 authors = [{ name = "Brian Gray", email = "bgraymusic@gmail.com" }]
 description = "A simplified, opinionated way to access the GitHub GraphQL API"
 readme = "README.md"
@@ -26,6 +25,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = ["gql[requests]", "deepmerge", "pyyaml", "dill"]
+dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/bgraymusic/github-gql"
@@ -37,6 +37,8 @@ packages = ["githubgql"]
 
 [tool.setuptools.package-data]
 "*" = ["*.yml", "*.json", "*.graphql"]
+
+[tool.setuptools_scm]
 
 [tool.mypy]
 python_version = '3.10'
