@@ -6,18 +6,43 @@ import sys
 from typing import Any
 
 from graphql import (
-    GraphQLScalarType, StringValueNode, parse,
-    ArgumentNode, DocumentNode, FieldNode, GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLObjectType,
-    IntValueNode, NameNode, NullValueNode, OperationDefinitionNode, OperationType, SelectionSetNode
+    parse, ArgumentNode, DocumentNode, FieldNode, GraphQLField, GraphQLFieldMap, GraphQLInterfaceType,
+    GraphQLObjectType, GraphQLScalarType, IntValueNode, NameNode, NullValueNode, OperationDefinitionNode,
+    OperationType, SelectionSetNode, StringValueNode
 )
 
-from githubgql.Schema import Schema
+from githubgql.Clock import Clock
 
 from .Config import Config
 from .PathKey import PathKey
+from .Schema import Schema
 
 
 class Query:
+    """The magic that allows a simple query to represent a full, complex GQL query
+
+    Options to simplify your query definition:
+
+    1. Remove the pagination arguments, unless you wish to control the page size and/or direction of paging (use `first/last: n` for size, `after/before: null` for direction, or both).
+    2. Remove `edges/node` and `nodes` levels, unless you need to specify info at those levels. The Query class will inject them for you.
+    3. Omit common `id` fields and let Query inject them for you.
+    4. Cleanup common authoring errors, such as empty bracket scopes.
+
+    Useful case for this class by itself:
+
+    Check the traditional query that your simplified query would be equivalent
+    to::
+
+        from githubgql.Query import Query
+        from graphql import print_ast
+        query = \"\"\"
+        query myQuerySpec {
+            # your query spec here
+        }
+        \"\"\"
+        ast = Query(query).get_doc()
+        print_ast(ast)
+    """
 
     EMPTY_BRACKETS_PATTERN = re.compile(r'{[\s]*}')
     HARD_NODE_LIMIT = 500000  # GitHub maximum potential nodes per request
@@ -50,7 +75,7 @@ class Query:
             self.doc = self._build_ast(query)
             self._validate_quotas(auto_fit_quotas)
 
-    def get_doc(self):
+    def get_doc(self) -> DocumentNode:
         return self.doc
 
     def get_paged_node(self, path: PathKey) -> PagedNodeInfo:
@@ -63,30 +88,29 @@ class Query:
         self.paged_nodes[path].cursor_arg.value = StringValueNode(value=cursor) if cursor else NullValueNode()
 
     def _cleanup_query(self, query: str) -> str:
-        """Auto-correct common errors in query syntax"""
-
-        # Error 1) Empty brackets instead of nothing when a leaf node will be given default fields
-        query = re.sub(Query.EMPTY_BRACKETS_PATTERN, '', query)
-
+        with Clock('Cleaning up query'):
+            # Error 1) Empty brackets instead of nothing when a leaf node will be given default fields
+            query = re.sub(Query.EMPTY_BRACKETS_PATTERN, '', query)
         return query
 
     def _validate_quotas(self, adjust: bool):
-        query_size = self._get_query_size()
-        if query_size > Query.HARD_NODE_LIMIT:
-            print(f'Aggregate query size over quota ({query_size:n} > {Query.HARD_NODE_LIMIT:n}). '
-                  f'{'Adjusting…' if adjust else ''}', file=sys.stderr)
-            if adjust:
-                while query_size > Query.HARD_NODE_LIMIT:
-                    self._nudge_down_page_sizes()
-                    query_size = self._get_query_size()
-                page_sizes = {}
-                for path, info in self.paged_nodes.items():
-                    page_sizes['/'.join(path)] = info.page_size_arg.value.value
-                print(f'New page sizes by path ({query_size} total):', file=sys.stderr)
-                for k, v in page_sizes.items():
-                    print(f'\t{k}: {v}', file=sys.stderr)
-            else:
-                exit(-1)
+        with Clock('Validating quotas'):
+            query_size = self._get_query_size()
+            if query_size > Query.HARD_NODE_LIMIT:
+                print(f'Aggregate query size over quota ({query_size:n} > {Query.HARD_NODE_LIMIT:n}). '
+                    f'{'Adjusting…' if adjust else ''}', file=sys.stderr)
+                if adjust:
+                    while query_size > Query.HARD_NODE_LIMIT:
+                        self._nudge_down_page_sizes()
+                        query_size = self._get_query_size()
+                    page_sizes = {}
+                    for path, info in self.paged_nodes.items():
+                        page_sizes['/'.join(path)] = info.page_size_arg.value.value
+                    print(f'New page sizes by path ({query_size} total):', file=sys.stderr)
+                    for k, v in page_sizes.items():
+                        print(f'\t{k}: {v}', file=sys.stderr)
+                else:
+                    exit(-1)
 
     def _get_query_size(self):
         total_size = 0
@@ -111,11 +135,12 @@ class Query:
             info.page_size_arg.value.value = max(int(info.page_size_arg.value.value * 0.95), 1)
 
     def _build_ast(self, query: str) -> DocumentNode:
-        doc = parse(query, no_location=True)
-        path = PathKey()
-        for definition in doc.definitions:
-            if isinstance(definition, OperationDefinitionNode) and definition.operation == OperationType.QUERY:
-                self._build_query(definition, Schema.get().query_type, path.copy())
+        with Clock('Building AST'):
+            doc = parse(query, no_location=True)
+            path = PathKey()
+            for definition in doc.definitions:
+                if isinstance(definition, OperationDefinitionNode) and definition.operation == OperationType.QUERY:
+                    self._build_query(definition, Schema.get().query_type, path.copy())
         return doc
 
     def _build_query(self, query_node: OperationDefinitionNode, schema_node: GraphQLObjectType, path: PathKey):

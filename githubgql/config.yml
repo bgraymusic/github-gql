@@ -23,6 +23,7 @@
 github_graphql_endpoint: https://api.github.com/graphql
 github_graphql_schema: schema.docs.graphql
 gh_gql_schema_bin: graphql_schema.bin
+clock_on: False
 
 # Default fields to fetch by interface
 interfaces:

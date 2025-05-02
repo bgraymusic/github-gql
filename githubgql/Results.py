@@ -1,11 +1,21 @@
 from __future__ import annotations
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from typing import Any, TypeAlias
+
+from githubgql.Clock import Clock
 
 from .PathKey import PathKey
 
 
 class Results:
+    """Transformer for results from the GitHub GraphQL API
+
+    Simplifications to the query results:
+
+    1. Build pagination updates and apply them back to the query for the next page request.
+    2. Remove the pagination information from results comunicated back to the client.
+    3. Remove auto-injected `edges/node` levels from the result, leaving only those that were specified manually in the original query.
+    """
 
     @dataclass
     class CursorInfo:
@@ -21,9 +31,12 @@ class Results:
     def __init__(self, result: ResultNode):
         self._result_data = result
         self._updates: Results.UpdateMapping = {}
-        self._has_more_pages = self._build_pagination_updates(result, PathKey())
-        self._clean_up_pagination(result)
-        self._collapse_edges_and_nodes(result)
+        with Clock('Building pagination updates'):
+            self._has_more_pages = self._build_pagination_updates(result, PathKey())
+        with Clock('Cleaning up pagination artifacts'):
+            self._clean_up_pagination(result)
+        with Clock('Collapsing edges and nodes'):
+            self._collapse_edges_and_nodes(result)
 
     def to_dict(self) -> ResultNode:
         return self._result_data

@@ -130,45 +130,35 @@ of all the instrumentation, leaving you with a clean data representation.
 
 from __future__ import annotations
 
-from pathlib import Path
 import shlex
 import subprocess
 import sys
-from typing import Any, TypeAlias, Callable
+from typing import TypeAlias, Callable
 
-from deepmerge.merger import Merger as DeepmergeMerger
 from gql import Client as GQLClient
 from gql.transport.requests import RequestsHTTPTransport
 
-from githubgql.Schema import Schema
+from githubgql.Clock import Clock
 
-from .Clock import Clock
 from .Config import Config
-from .Merger import ghp_merger
+from .Merger import Merger
 from .Paginator import Paginator
+from .Schema import Schema
 
 
 class GitHubGQL:
-    """A GitHub-specific GraphQL client.
 
-    Class Attributes:
-        Merger: A deep merger configured specifically to handle the data
-            structures in a result object. It is heavily recommended to use
-            this for merging pages.
-        ResultPage: The type of one page of execution results.
-        Callback: A function that can be passed into execute_callback for
-            page-by-page processing.
+    Merger = Merger()
+    "A deep merger for handling the data structures in a result object."
 
-    Instance Attributes:
-        gql_client: The lower-level client that performs raw executions.
-        default_page_size: How many items will be requested from collections
-            per GraphQL call, unless overridden on a per-query basis.
-    """
-
-    Merger: DeepmergeMerger = ghp_merger
     ResultPage: TypeAlias = dict[str, dict | list | str]
+    "The type of one page of execution results."
+
     Iterator: TypeAlias = Paginator
+    "An iterator used to loop through pages as they arrive."
+
     Callback: TypeAlias = Callable[[ResultPage], bool]
+    "A function that can be passed into execute_callback for page-by-page processing."
 
     def __init__(self, pat: str = None, *,
                  default_page_size: int = 100,
@@ -181,7 +171,7 @@ class GitHubGQL:
             pat: A Personal Access Token issued by GitHub that has all the
                 privileges required for the queries the user intends to
                 execute.
-                Default: look up token via `git config --get user.password`.
+                Default: look up token via ``git config --get user.password``.
             default_page_size: How many items will be requested from
                 collections per GraphQL call, unless overridden on a per-query
                 basis. Many calls may be required to fulfill a complicated
@@ -193,30 +183,31 @@ class GitHubGQL:
                 Default: True
             inject_default_fields: Automatically inject fields into nodes that
                 GitHubGQL has determined are commonly used to identify that
-                type, such as `id`, `url`, or `number`. Fields necessary to
-                disambiguate and merge paged lists will be injected regardless
-                of this argument.
+                type, such as ``id``, ``url``, or ``number``. Fields necessary
+                to disambiguate and merge paged lists will be injected
+                regardless of this argument.
                 Default: True
             cleanup_query: Automatically detect and correct common mistakes in
                 query construction. Override to fail loudly and do your own
                 corrections.
                 Default: True
         """
-        try:
-            pat = (pat or
-                   subprocess.run(shlex.split("git config --get user.password"), 
-                                  capture_output=True, check=True, text=True).stdout.strip())
-        except subprocess.CalledProcessError:
-            print('GitHubGQL: Implicit Personal Access Token unavailable; provide one explicitly', file=sys.stderr)
-            raise
+        with Clock('Constructing GitHubGQL client'):
+            try:
+                pat = (pat or
+                    subprocess.run(shlex.split("git config --get user.password"), 
+                                    capture_output=True, check=True, text=True).stdout.strip())
+            except subprocess.CalledProcessError:
+                print('GitHubGQL: Implicit Personal Access Token unavailable; provide one explicitly', file=sys.stderr)
+                raise
 
-        self.default_page_size = min(max(default_page_size, 1), 100) if auto_fit_quotas else default_page_size
-        self.auto_fit_quotas = auto_fit_quotas
-        self.inject_default_fields = inject_default_fields
-        self.cleanup_query = cleanup_query
-        gql_transport = RequestsHTTPTransport(url=Config.get().github_graphql_endpoint,
-                                              headers={"Authorization": f"bearer {pat}"})
-        self.gql_client = GQLClient(schema=Schema.get(), transport=gql_transport)
+            self.default_page_size = min(max(default_page_size, 1), 100) if auto_fit_quotas else default_page_size
+            self.auto_fit_quotas = auto_fit_quotas
+            self.inject_default_fields = inject_default_fields
+            self.cleanup_query = cleanup_query
+            gql_transport = RequestsHTTPTransport(url=Config.get().github_graphql_endpoint,
+                                                headers={"Authorization": f"bearer {pat}"})
+            self.gql_client = GQLClient(schema=Schema.get(), transport=gql_transport)
 
     def execute_all(self, query: str, *, vars: dict[str, str] = None) -> ResultPage:
         """Execute the provided query to completion, with as many calls as necessary.
@@ -232,7 +223,8 @@ class GitHubGQL:
             simplified query was provided for auto-pagination, the results do
             not include pageInfo data.
 
-        Example:
+        Example::
+
             results = client.execute_all(query, vars, 5)
         """
         paginator = Paginator(self.gql_client, query, vars, page_size=self.default_page_size,
@@ -255,7 +247,8 @@ class GitHubGQL:
             An iterator allowing the client to control their own merging
             and/or other operations
 
-        Example:
+        Example::
+
             merged_results = {}
             for result in client.execute_iter():
                 Client.Merger.merge(merged_results, result)
@@ -281,7 +274,8 @@ class GitHubGQL:
         Returns:
             Nothing
 
-        Example:
+        Example::
+
             merged_results = {}
 
             def callback(result):

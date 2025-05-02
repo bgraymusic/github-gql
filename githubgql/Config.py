@@ -27,7 +27,12 @@ import yaml
 
 
 class Config:
-    """Access to config.yml data"""
+    """Access to config.yml data
+    
+    Usage::
+
+        Config.get().github_graphql_schema  # the Github GraphQL schema filename
+    """
 
     instance: Config = None
 
@@ -42,6 +47,7 @@ class Config:
         self.gh_gql_schema_bin = None
         self.interfaces = None
         self.merge_match_keys = None
+        self.clock_on = False
 
         with open(f"{self.dir}/config.yml", "r") as f:
             data = yaml.load(f.read(), yaml.BaseLoader)
