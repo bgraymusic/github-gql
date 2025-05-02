@@ -29,6 +29,7 @@ dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/bgraymusic/github-gql"
+Documentation = "https://githubgql.readthedocs.io/en/stable/"
 Issues = "https://github.com/bgraymusic/github-gql/issues"
 
 [tool.setuptools]

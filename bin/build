@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+git fetch --tags;
+latestTag=$(git describe --tags "$(git rev-list --tags --max-count=1)");
+git checkout $latestTag
 python3 -m build
-twine check dist/*
-twine upload dist/*
+# twine check dist/*
+# twine upload dist/*
