@@ -243,24 +243,24 @@ class GitHubGQL:
 
         Example::
 
-            results = client.execute_all(query, vars, 5)
+            results = client.execute_all(query, variables, 5)
         """
         paginator = Paginator(
-            self.gql_client, query, vars, page_size=self.default_page_size, auto_fit_quotas=self.auto_fit_quotas
+            self.gql_client, query, variables, page_size=self.default_page_size, auto_fit_quotas=self.auto_fit_quotas
         )
         merged_results = {}
         for result in paginator:
             GitHubGQL.Merger.merge(merged_results, result)
         return merged_results
 
-    def execute_iter(self, query: str, *, vars: dict[str, str] = None) -> Iterator:
+    def execute_iter(self, query: str, *, variables: dict[str, str] = None) -> Iterator:
         """Return an iterator for the provided query.
 
         Args:
             query: The query to execute. This can be standard GraphQL as
                 described by online documentation, or a simplified, GitHub-only
                 version with auto-pagination as described above.
-            vars: The variables to substitute into the query.
+            variables: The variables to substitute into the query.
 
         Returns:
             An iterator allowing the client to control their own merging
@@ -275,9 +275,9 @@ class GitHubGQL:
                     # Got what we need
                     break
         """
-        return Paginator(self.gql_client, query, vars, self.default_page_size).__iter__()
+        return Paginator(self.gql_client, query, variables, self.default_page_size).__iter__()
 
-    def execute_callback(self, callback: GitHubGQL.Callback, query: str, *, vars: dict[str, str] = None) -> None:
+    def execute_callback(self, callback: GitHubGQL.Callback, query: str, *, variables: dict[str, str] = None) -> None:
         """Execute the query page by page, calling `callback` for each page.
 
         Args:
@@ -288,7 +288,7 @@ class GitHubGQL:
             query: The query to execute. This can be standard GraphQL as
                 described by online documentation, or a simplified, GitHub-only
                 version with auto-pagination as described above.
-            vars: The variables to substitute into the query.
+            variables: The variables to substitute into the query.
 
         Returns:
             Nothing
@@ -306,7 +306,7 @@ class GitHubGQL:
 
             client.execute_callback(callback)
         """
-        paginator = Paginator(self.gql_client, query, vars, self.default_page_size)
+        paginator = Paginator(self.gql_client, query, variables, self.default_page_size)
         try:
             for result in paginator:
                 if not callback(result):

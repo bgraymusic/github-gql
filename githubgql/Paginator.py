@@ -16,7 +16,7 @@ class Paginator:
         self,
         gql_client: GQLClient,
         query_str: str,
-        vars: dict[str, str],
+        variables: dict[str, str],
         *,
         page_size=100,
         auto_fit_quotas=True,
@@ -31,7 +31,7 @@ class Paginator:
             inject_default_fields=inject_default_fields,
             cleanup_query=cleanup_query,
         )
-        self.vars = vars
+        self.variables = variables
         self.complete = False
 
     def __iter__(self) -> Paginator:
