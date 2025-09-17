@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from gql import Client as GQLClient
+from gql import gql
 
 from .Clock import Clock
 from .PathKey import PathKey
@@ -41,7 +42,9 @@ class Paginator:
             raise StopIteration
         else:
             with Clock("Sending query to GitHub GraphQL API"):
-                results = self.gql_client.execute(self.query.get_doc(), self.vars)
+                the_query = gql(self.query.get_doc())
+                the_query.variable_values = self.variables
+                results = self.gql_client.execute(the_query)
             self.complete = not self._update_pagination(Results(results))
             return results
 
