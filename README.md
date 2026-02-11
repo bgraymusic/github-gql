@@ -1,7 +1,7 @@
 # GitHubGQL
 GitHubGQL provides a simplified, opinionated way to access the [GitHub GraphQL API](https://docs.github.com/en/graphql), particularly with respect to handling paging.
 
-## GitHubGQL's primary advantages over straight GraqphQL queries:
+## GitHubGQL's primary advantages over straight GraphQL queries:
 
 ### Auto-Paging
 Specify page size and/or direction if you choose, or just leave it up to the defaults. GitHubGQL will handle your query by merging together multiple requests, incrementing arbitrarily nested paging cursors automatically.
@@ -13,7 +13,7 @@ __All__
 : Execute your query all at once and get the results delivered pre-merged.
 
 __Iterator__
-: Retrieve an interator and get results one page at a time. Use the GitHubGQL Merger to merge them, or operate on them individually.
+: Retrieve an iterator and get results one page at a time. Use the GitHubGQL Merger to merge them, or operate on them individually.
 
 __Callback__
 : Register a callback to receive page results as they are ready.
