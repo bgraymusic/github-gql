@@ -36,4 +36,4 @@ class Clock:
 
     def __exit__(self, exc_type, exc_value, traceback):
         if Config.get().clock_on:
-            print(f"done ({(time() - self.enter_time):.3f}s)", sys.stderr)
+            print(f"done ({(time() - self.enter_time):.3f}s)", file=sys.stderr)

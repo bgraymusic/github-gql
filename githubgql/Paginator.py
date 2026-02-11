@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from gql import Client as GQLClient
+from gql import gql
 
 from .Clock import Clock
 from .PathKey import PathKey
@@ -15,7 +16,7 @@ class Paginator:
         self,
         gql_client: GQLClient,
         query_str: str,
-        vars: dict[str, str],
+        variables: dict[str, str],
         *,
         page_size=100,
         auto_fit_quotas=True,
@@ -30,7 +31,7 @@ class Paginator:
             inject_default_fields=inject_default_fields,
             cleanup_query=cleanup_query,
         )
-        self.vars = vars
+        self.variables = variables
         self.complete = False
 
     def __iter__(self) -> Paginator:
@@ -41,7 +42,9 @@ class Paginator:
             raise StopIteration
         else:
             with Clock("Sending query to GitHub GraphQL API"):
-                results = self.gql_client.execute(self.query.get_doc(), self.vars)
+                the_query = gql(self.query.get_doc())
+                the_query.variable_values = self.variables
+                results = self.gql_client.execute(the_query)
             self.complete = not self._update_pagination(Results(results))
             return results
 
